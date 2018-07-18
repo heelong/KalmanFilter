@@ -4,9 +4,9 @@
 
 #include "ekf.h"
 #include <iostream>
+#include <time.h>
 
-
-Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd& x_state) {
+Eigen::MatrixXd CalculateJacobian_cv(const Eigen::VectorXd& x_state) {
 	/**
 	TODO:
 	* Calculate a Jacobian here.
@@ -94,7 +94,8 @@ EKF::~EKF() {}
  * either radar or laser.
  */
 void EKF::ProcessMeasurement(const MeasurementPackage &meas_package) {
-
+	clock_t start, finish;
+	start = clock();
     if (!is_initialized_) {
 		/*
 		 * 第一次测量时初始化状态向量
@@ -153,7 +154,7 @@ void EKF::ProcessMeasurement(const MeasurementPackage &meas_package) {
 	 */
     if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
 		//radar的更新
-		ekf_.H_ = CalculateJacobian(ekf_.x_);//状态空间到测量空间的映射矩阵,计算雅克比矩阵
+		ekf_.H_ = CalculateJacobian_cv(ekf_.x_);//状态空间到测量空间的映射矩阵,计算雅克比矩阵
 		ekf_.R_ = R_radar_;//传入测量误差
         ekf_.UpdateEKF(meas_package.raw_measurements_);//对于radar数据采用扩展卡尔曼滤波更新
     } else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
@@ -168,4 +169,7 @@ void EKF::ProcessMeasurement(const MeasurementPackage &meas_package) {
 	 * 完成更新，更新时间
 	 */
 	previous_timestamp_ = meas_package.timestamp_;
+	finish = clock();
+	float totaltime = (double)(finish - start) / CLOCKS_PER_SEC;
+	std::cout << " -------------Current Frame cluster Time:" << totaltime*1000.0 << "ms" << std::endl;
 }
