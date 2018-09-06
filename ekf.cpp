@@ -171,5 +171,13 @@ void EKF::ProcessMeasurement(const MeasurementPackage &meas_package) {
 	previous_timestamp_ = meas_package.timestamp_;
 	finish = clock();
 	float totaltime = (double)(finish - start) / CLOCKS_PER_SEC;
-	std::cout << " -------------Current Frame cluster Time:" << totaltime*1000.0 << "ms" << std::endl;
+	//std::cout << " -------------Current Frame cluster Time:" << totaltime*1000.0 << "ms" << std::endl;
+}
+
+void EKF::getState(Eigen::VectorXd& x)
+{
+	x[0] = ekf_.x_[0];
+	x[1] = ekf_.x_[1];
+	x[2] = ekf_.x_[2];
+	x[3] = ekf_.x_[3];
 }

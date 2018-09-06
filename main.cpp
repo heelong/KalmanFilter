@@ -9,6 +9,7 @@
 #include "ground_truth_package.h"
 #include "Eigen/Dense"
 #include "measurement_package.h"
+#include "ekf_ctrv.h"
 
 //using namespace std;
 //using Eigen::MatrixXd;
@@ -86,10 +87,10 @@ Eigen::VectorXd CalculateRMSE(const std::vector<Eigen::VectorXd> &estimations,
 int main(int argc, char* argv[]) {
     //check_arguments(argc, argv);
 
-	std::string in_file_name_ = "D:\\WORK\\KF\\data\\data_synthetic.txt";//argv[1];
+	std::string in_file_name_ = "D:\\GitHub\\KalmanFilter\\data\\data_synthetic.txt";//argv[1];
 	std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
 
-	std::string out_file_name_ = "D:\\WORK\\KF\\data\\output.txt";//argv[2];
+	std::string out_file_name_ = "D:\\GitHub\\KalmanFilter\\data\\output.txt";//argv[2];
 	std::ofstream out_file_(out_file_name_.c_str(), std::ofstream::out);
 
     check_files(in_file_, in_file_name_, out_file_, out_file_name_);
@@ -158,23 +159,24 @@ int main(int argc, char* argv[]) {
     }
 
     // Create a Fusion EKF instance
-    EKF ekf;
-
+	EKF ekf;
+	//EKF ekf;
     // used to compute the RMSE later
 	std::vector<Eigen::VectorXd> estimations;
 	std::vector<Eigen::VectorXd> ground_truth;
 
     //Call the EKF-based fusion
     size_t N = measurement_pack_list.size();
-    for (size_t k = 0; k < N; ++k) {
+	for (size_t k = 0; k < N; ++k) {
         // start filtering from the second frame (the speed is unknown in the first
         // frame)
         ekf.ProcessMeasurement(measurement_pack_list[k]);
-
-        double p_x = ekf.ekf_.x_(0);
-		double p_y = ekf.ekf_.x_(1);
-		double v =   ekf.ekf_.x_(2);
-		double yaw = ekf.ekf_.x_(3);
+		Eigen::VectorXd x_t = Eigen::VectorXd(4);
+		ekf.getState(x_t);
+		double p_x = x_t(0);
+		double p_y = x_t(1);
+		double v = x_t(2);
+		double yaw = x_t(3);
 
         double v1 = cos(yaw) * v;
         double v2 = sin(yaw) * v;
