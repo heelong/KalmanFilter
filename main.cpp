@@ -10,7 +10,7 @@
 #include "Eigen/Dense"
 #include "measurement_package.h"
 #include "ekf_ctrv.h"
-
+#include "kf_Fusion.h"
 //using namespace std;
 //using Eigen::MatrixXd;
 //using Eigen::VectorXd;
@@ -87,11 +87,14 @@ Eigen::VectorXd CalculateRMSE(const std::vector<Eigen::VectorXd> &estimations,
 int main(int argc, char* argv[]) {
     //check_arguments(argc, argv);
 
-	std::string in_file_name_ = "D:\\GitHub\\KalmanFilter\\data\\data_synthetic.txt";//argv[1];
+	std::string in_file_name_ = "D:\\GitHub\\KalmanFilter\\data\\data_synthetic.txt";
 	std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
 
-	std::string out_file_name_ = "D:\\GitHub\\KalmanFilter\\data\\output.txt";//argv[2];
+	std::string out_file_name_ = "D:\\GitHub\\KalmanFilter\\data\\output.txt";
 	std::ofstream out_file_(out_file_name_.c_str(), std::ofstream::out);
+
+	std::string out_file_name2_ = "D:\\GitHub\\KalmanFilter\\data\\output2.txt";
+	std::ofstream out_file2_(out_file_name2_.c_str(), std::ofstream::out);
 
     check_files(in_file_, in_file_name_, out_file_, out_file_name_);
 
@@ -135,14 +138,18 @@ int main(int argc, char* argv[]) {
             measurement_pack_list.push_back(meas_package);
         } else if (sensor_type.compare("R") == 0) {
             // RADAR MEASUREMENT
+			meas_package.sensor_type_ = MeasurementPackage::RADAR;
+			meas_package.raw_measurements_ = Eigen::VectorXd(4);
+			         iss >> ro;
+			         iss >> phi;
+			         iss >> ro_dot;
 
-            // read measurements at this timestamp
-            meas_package.sensor_type_ = MeasurementPackage::RADAR;
-			meas_package.raw_measurements_ = Eigen::VectorXd(3);
-            iss >> ro;
-            iss >> phi;
-            iss >> ro_dot;
-            meas_package.raw_measurements_ << ro, phi, ro_dot;
+			//将角度归一化到【-π，π】
+			while (phi > M_PI)
+				phi -= DoublePI;
+			while (phi < -M_PI)
+				phi += DoublePI;
+			meas_package.raw_measurements_ << ro * cos(phi), ro * sin(phi), ro_dot* cos(phi), ro_dot* sin(phi);
             iss >> timestamp;
             meas_package.timestamp_ = timestamp;
             measurement_pack_list.push_back(meas_package);
@@ -159,7 +166,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Create a Fusion EKF instance
-	EKF ekf;
+	KF_FUSION ekf;
 	//EKF ekf;
     // used to compute the RMSE later
 	std::vector<Eigen::VectorXd> estimations;
@@ -175,36 +182,31 @@ int main(int argc, char* argv[]) {
 		ekf.getState(x_t);
 		double p_x = x_t(0);
 		double p_y = x_t(1);
-		double v = x_t(2);
-		double yaw = x_t(3);
-
-        double v1 = cos(yaw) * v;
-        double v2 = sin(yaw) * v;
+		double v_x = x_t(2);
+		double v_y = x_t(3);
 
         VectorXd estimate(4);
 
         estimate(0) = p_x;
         estimate(1) = p_y;
-        estimate(2) = v1;
-        estimate(3) = v2;
+		estimate(2) = v_x;
+		estimate(3) = v_y;
 
         // output the estimation
         out_file_ << p_x << " ";
         out_file_ << p_y << " ";
-        out_file_ << v1 << " ";
-        out_file_ << v2 << " ";
+		out_file_ << v_x << " ";
+		out_file_ << v_y << " ";
 
         // output the measurements
         if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
-            // output the estimation
             out_file_ << measurement_pack_list[k].raw_measurements_(0) << " ";
             out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
         } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
-            // output the estimation in the cartesian coordinates
             float ro = measurement_pack_list[k].raw_measurements_(0);
             float phi = measurement_pack_list[k].raw_measurements_(1);
-            out_file_ << ro * cos(phi) << " "; // p1_meas
-            out_file_ << ro * sin(phi) << " "; // ps_meas
+			out_file_ << measurement_pack_list[k].raw_measurements_(0) << " ";
+			out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
         }
 
         // output the ground truth packages
@@ -212,6 +214,12 @@ int main(int argc, char* argv[]) {
         out_file_ << gt_pack_list[k].gt_values_(1) << " ";
         out_file_ << gt_pack_list[k].gt_values_(2) << " ";
         out_file_ << gt_pack_list[k].gt_values_(3) << "\n";
+
+		out_file2_ << k << " ";
+		out_file2_ << p_x - gt_pack_list[k].gt_values_(0) << " ";
+		out_file2_ << p_y - gt_pack_list[k].gt_values_(1) << " ";
+		out_file2_ << v_x - gt_pack_list[k].gt_values_(2) << " ";
+		out_file2_ << v_y - gt_pack_list[k].gt_values_(3) << "\n";
 
         estimations.push_back(estimate);
         ground_truth.push_back(gt_pack_list[k].gt_values_);
@@ -224,7 +232,9 @@ int main(int argc, char* argv[]) {
     if (out_file_.is_open()) {
         out_file_.close();
     }
-
+	if (out_file2_.is_open()) {
+		out_file2_.close();
+	}
     if (in_file_.is_open()) {
         in_file_.close();
     }

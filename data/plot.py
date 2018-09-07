@@ -14,6 +14,15 @@ with open('output.txt') as f:
 import plotly.offline as py
 from plotly.graph_objs import *
 
+# estimations
+trace1 = Scatter(
+    x=table_ekf_output['px_est'],
+    y=table_ekf_output['py_est'],
+    xaxis='x2',
+    yaxis='y2',
+    name='KF- Estimate',
+    mode='markers'
+)
 # Measurements
 trace2 = Scatter(
     x=table_ekf_output['px_meas'],
@@ -24,15 +33,7 @@ trace2 = Scatter(
     mode = 'markers'
 )
 
-# estimations
-trace1 = Scatter(
-    x=table_ekf_output['px_est'],
-    y=table_ekf_output['py_est'],
-    xaxis='x2',
-    yaxis='y2',
-    name='KF- Estimate',
-    mode='markers'
-)
+
 
 # Ground Truth
 trace3 = Scatter(

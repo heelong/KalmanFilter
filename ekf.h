@@ -39,6 +39,7 @@ private:
 	
 	Eigen::MatrixXd R_laser_;//激光雷达的误差矩阵
 	Eigen::MatrixXd R_radar_;//毫米波雷达的误差矩阵
+	Eigen::MatrixXd R_laser_radar_;//毫米波雷达的误差矩阵
 	Eigen::MatrixXd H_laser_;//激光雷达映射矩阵
 	Eigen::MatrixXd Hj_;//毫米波雷达映射矩阵对应的雅克比矩阵
 };

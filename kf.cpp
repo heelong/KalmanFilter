@@ -1,7 +1,7 @@
 
 #include "kf.h"
 #include <iostream>
-const float DoublePI = 2 * M_PI;
+
 /**
  * Initializes Unscented Kalman filter
  */

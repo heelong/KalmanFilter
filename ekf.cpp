@@ -71,6 +71,13 @@ EKF::EKF() {
 	R_radar_ << std_radrho_*std_radrho_, 0, 0,
             0, std_radphi_*std_radphi_, 0,
 			0, 0, std_radrhodot_*std_radrhodot_;
+
+	R_laser_radar_ = Eigen::MatrixXd(4, 4);
+	R_laser_radar_ << std_laspx_*std_laspx_, 0,0,0,
+		0, std_laspy_*std_laspy_,0,0,
+		0, 0, std_radrhodot_*std_radrhodot_,0,
+		0, 0, 0, std_radrhodot_*std_radrhodot_;
+
 	//状态向量
 	ekf_.x_ = Eigen::VectorXd(4);
 	//系统状态不确定性
@@ -107,13 +114,14 @@ void EKF::ProcessMeasurement(const MeasurementPackage &meas_package) {
 		ekf_.x_ << 1, 1, 1, 1;
 
         if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
-			std::cout << "laser data: "<< std::endl;
+			//std::cout << "laser data: "<< std::endl;
 			ekf_.x_[0] = meas_package.raw_measurements_[0];
 			ekf_.x_[1] = meas_package.raw_measurements_[1];
 			ekf_.x_[2] = 0;
 			ekf_.x_[3] = 0;
-        } else {
-			std::cout << "radar data: " << std::endl;
+		}
+		else if (meas_package.sensor_type_ == MeasurementPackage::RADAR){
+			//std::cout << "radar data: " << std::endl;
             float rho = meas_package.raw_measurements_[0];
             float phi = meas_package.raw_measurements_[1];
             float rho_dot = meas_package.raw_measurements_[2];
@@ -122,6 +130,15 @@ void EKF::ProcessMeasurement(const MeasurementPackage &meas_package) {
 			ekf_.x_[2] = rho_dot*cos(phi);
 			ekf_.x_[3] = rho_dot*sin(phi);
         }
+		else {
+			//std::cout << "radar data: " << std::endl;
+			float phi = meas_package.raw_measurements_[3];
+			float rho_dot = meas_package.raw_measurements_[4];
+			ekf_.x_[0] = meas_package.raw_measurements_[0];
+			ekf_.x_[1] = meas_package.raw_measurements_[1];
+			ekf_.x_[2] = rho_dot*cos(phi);
+			ekf_.x_[3] = rho_dot*sin(phi);
+		}
 		previous_timestamp_ = meas_package.timestamp_;
         is_initialized_ = true;
         return;
@@ -164,7 +181,17 @@ void EKF::ProcessMeasurement(const MeasurementPackage &meas_package) {
 			0, 1, 0, 0;
 		ekf_.R_ = R_laser_;//传入测量误差
 		ekf_.Update(meas_package.raw_measurements_);//对于lidar数据采用线性卡尔曼滤波更新
-    }
+	}
+	else if (meas_package.sensor_type_ == MeasurementPackage::LASER_RADAR) {
+		//lidar的更新
+		ekf_.H_ = Eigen::MatrixXd(4, 4);//状态空间到测量空间的映射矩阵
+		ekf_.H_ << 1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1;
+		ekf_.R_ = R_laser_radar_;//传入测量误差
+		ekf_.Update(meas_package.raw_measurements_);//近似默认为线性模型
+	}
 	/*
 	 * 完成更新，更新时间
 	 */
