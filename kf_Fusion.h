@@ -34,6 +34,7 @@ public:
 	//卡尔曼滤波器对象
 	KF ekf_;
 	void getState(Eigen::VectorXd& x);
+	void initial();
 private:
 	//判断是否被初始化
 	bool is_initialized_;

@@ -23,38 +23,7 @@ KF_FUSION::KF_FUSION() {
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1;
-
-
-	float std_laspx_ = 0.05;
-	float std_laspy_ = 0.05;
-	R_laser_ = Eigen::MatrixXd(2, 2);
-    R_laser_ << std_laspx_*std_laspx_, 0,
-            0, std_laspy_*std_laspy_;
-
-	float std_radpx_ = 0.3;
-	float std_radpy_ = 0.3;
-	float std_vx_ = 1.3;
-	float std_vy_ = 1.3;
-	R_radar_ = Eigen::MatrixXd(4, 4);
-	R_radar_ << std_radpx_*std_radpx_, 0, 0,0,
-		0, std_radpy_*std_radpy_,0, 0,
-		0, 0, std_vx_*std_vx_,0,
-		0, 0, 0, std_vy_*std_vy_;
-
-	R_laser_radar_ = Eigen::MatrixXd(4, 4);
-	R_laser_radar_ << std_laspx_*std_laspx_, 0, 0, 0,
-		0, std_laspy_*std_laspy_, 0, 0,
-		0, 0, std_vx_*std_vx_, 0,
-		0, 0, 0, std_vx_*std_vx_;
-
-	//状态向量
-	ekf_.x_ = Eigen::VectorXd(4);
-	//系统状态不确定性
-	ekf_.P_ = Eigen::MatrixXd(4, 4);
-	ekf_.P_ << 1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 0.5, 0,
-		0, 0, 0, 0.5;
+	initial();
 	ekf_.F_ = Eigen::MatrixXd(4, 4);
 	ekf_.F_ << 1, 0, 1, 0,
 		0, 1, 0, 1,
@@ -85,7 +54,7 @@ void KF_FUSION::ProcessMeasurement(const MeasurementPackage &meas_package) {
         if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
 			ekf_.x_[0] = meas_package.raw_measurements_[0];
 			ekf_.x_[1] = meas_package.raw_measurements_[1];
-			ekf_.x_[2] = 0;
+			ekf_.x_[2] = 5;
 			ekf_.x_[3] = 0;
 		}
 		else {
@@ -156,4 +125,96 @@ void KF_FUSION::getState(Eigen::VectorXd& x)
 	x[1] = ekf_.x_[1];
 	x[2] = ekf_.x_[2];
 	x[3] = ekf_.x_[3];
+}
+
+void KF_FUSION::initial()
+{
+	std::string in_file_name_ = "D:/GitHub/KalmanFilter/config.txt";
+	std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
+	if (!in_file_.is_open()) {
+		std::cerr << "Cannot open input file: " << in_file_name_ << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	std::string line;
+	float std_laspx_ = 0.05;
+	float std_laspy_ = 0.05;
+	float std_radpx_ = 0.3;
+	float std_radpy_ = 0.3;
+	float std_vx_ = 1.3;
+	float std_vy_ = 1.3;
+
+	float px_ = 1;
+	float py_ = 1;
+	float pvx_ = 0.5;
+	float pvy_ = 0.5;
+	while (getline(in_file_, line))
+	{
+		std::istringstream iss(line);
+		std::string data_type;
+		iss >> data_type;
+		if (data_type.compare("std_laspx_") == 0) {
+			iss >> std_laspx_;
+			continue;
+		}
+		if (data_type.compare("std_laspy_") == 0) {
+			iss >> std_laspy_;
+			continue;
+		}
+		if (data_type.compare("std_radpx_") == 0) {
+			iss >> std_radpx_;
+			continue;
+		}
+		if (data_type.compare("std_radpy_") == 0) {
+			iss >> std_radpy_;
+			continue;
+		}
+		if (data_type.compare("std_vx_") == 0) {
+			iss >> std_vx_;
+			continue;
+		}
+		if (data_type.compare("std_vy_") == 0) {
+			iss >> std_vy_;
+			continue;
+		}
+		if (data_type.compare("px_") == 0) {
+			iss >> px_;
+			continue;
+		}
+		if (data_type.compare("py_") == 0) {
+			iss >> py_;
+			continue;
+		}
+		if (data_type.compare("pvx_") == 0) {
+			iss >> pvx_;
+			continue;
+		}
+		if (data_type.compare("pvy_") == 0) {
+			iss >> pvy_;
+			continue;
+		}
+	}
+	R_laser_ = Eigen::MatrixXd(2, 2);
+	R_laser_ << std_laspx_*std_laspx_, 0,
+		0, std_laspy_*std_laspy_;
+	R_radar_ = Eigen::MatrixXd(4, 4);
+	R_radar_ << std_radpx_*std_radpx_, 0, 0, 0,
+		0, std_radpy_*std_radpy_, 0, 0,
+		0, 0, std_vx_*std_vx_, 0,
+		0, 0, 0, std_vy_*std_vy_;
+
+	R_laser_radar_ = Eigen::MatrixXd(4, 4);
+	R_laser_radar_ << std_laspx_*std_laspx_, 0, 0, 0,
+		0, std_laspy_*std_laspy_, 0, 0,
+		0, 0, std_vx_*std_vx_, 0,
+		0, 0, 0, std_vx_*std_vx_;
+
+	//系统状态不确定性
+	ekf_.P_ = Eigen::MatrixXd(4, 4);
+	ekf_.P_ << px_, 0, 0, 0,
+		0, py_, 0, 0,
+		0, 0, pvx_, 0,
+		0, 0, 0, pvy_;
+
+	//状态向量
+	ekf_.x_ = Eigen::VectorXd(4);
 }

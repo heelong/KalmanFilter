@@ -19,23 +19,26 @@ from plotly.graph_objs import *
 plt.subplot(221)  
 plt.xlabel('index')
 plt.ylabel('x error')
-plt.scatter(table_error_output['errorid'],table_error_output['px_error'],marker="+")
-
+#plt.scatter(table_error_output['errorid'],table_error_output['px_error'],marker="+")
+plt.plot(table_error_output['errorid'],table_error_output['px_error'],marker="+")
 
 plt.subplot(222)  
 plt.xlabel('index')
 plt.ylabel('y error')
-plt.scatter(table_error_output['errorid'],table_error_output['py_error'],marker="+")
+#plt.scatter(table_error_output['errorid'],table_error_output['py_error'],marker="+")
+plt.plot(table_error_output['errorid'],table_error_output['py_error'],marker="+")
 
 plt.subplot(223)  
 plt.xlabel('index')
 plt.ylabel('vx error')
-plt.scatter(table_error_output['errorid'],table_error_output['vx_error'],marker="*")
+#plt.scatter(table_error_output['errorid'],table_error_output['vx_error'],marker="*")
+plt.plot(table_error_output['errorid'],table_error_output['vx_error'],marker="*")
 
 plt.subplot(224)  
 plt.xlabel('index')
 plt.ylabel('vy error')
-plt.scatter(table_error_output['errorid'],table_error_output['vy_error'],marker="*")
+#plt.scatter(table_error_output['errorid'],table_error_output['vy_error'],marker="*")
+plt.plot(table_error_output['errorid'],table_error_output['vy_error'],marker="*")
 
 plt.show()
 

@@ -1,0 +1,11 @@
+std_laspx_  0.05
+std_laspy_  0.05
+std_radpx_  0.3
+std_radpy_  0.3
+std_vx_   2.5
+std_vy_   1.1
+
+px_ 1
+py_ 1
+pvx_ 0.5
+pvy_ 0.6
