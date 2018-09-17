@@ -58,6 +58,7 @@ public:
 	void Predict(double delta_t);
 	void getState(Obj &Obstacles);
 	void getState(Eigen::VectorXd& x);
+	float control_psi(float psi);
 private:
 	//判断是否被初始化
 	bool is_initialized_;

@@ -41,8 +41,8 @@ EKF_CTRV::EKF_CTRV() {
 	Q_ = Eigen::MatrixXd(5, 5);//状态协方差矩阵
 	JA_ = Eigen::MatrixXd(5, 5);//状态转移矩阵的雅克比矩阵
 	HJ_ = Eigen::MatrixXd(3, 5);//预测空间到测量空间的雅克比矩阵
-	std_a_ = 1.0;
-	std_yawdd_ = 0.5;
+	std_a_ = 2.0;
+	std_yawdd_ = 0.3;
 }
 
 EKF_CTRV::~EKF_CTRV() {}
@@ -54,27 +54,29 @@ void EKF_CTRV::StateTransition(double delta_t)
 	float x = x_[0];
 	float y = x_[1];
 	float v = x_[2];
+	x_[3] = control_psi(x_[3]);
 	float theta = x_[3];
 	float omiga = x_[4];
-	if (omiga > 0.00001)
+	float tmpTheta = omiga*delta_t + theta;
+	if (abs(omiga) > 0.0001)
 	{
-		float tmpTheta = 0, v_omiga = v / omiga;
-		x_[2] = v;								   //相对速度
-		x_[3] = tmpTheta = omiga*delta_t + theta;   //偏航角
-		x_[4] = omiga;							   //偏航角速度
 
-		x_[0] = v_omiga*sin(tmpTheta) - v_omiga*sin(theta) + x;//x
-		x_[1] = -v_omiga*cos(tmpTheta) + v_omiga*cos(theta) + y;//y
+		float v_omiga = v / omiga;
+		x_[0] = v_omiga*(sin(tmpTheta) - sin(theta)) + x;//x
+		x_[1] = v_omiga*(-cos(tmpTheta) + cos(theta)) + y;//y
+		x_[2] = v;								   //相对速度
+		x_[3] = tmpTheta ;						  //偏航角
+		x_[4] = omiga;							   //偏航角速度
 	}
 	else
 	{
-		x_[2] = v;								   //相对速度
-		x_[3] = omiga*delta_t + theta;             //偏航角
-		x_[4] = omiga;							   //偏航角速度
-
 		x_[0] = v*cos(theta)*delta_t + x;//x
 		x_[1] = v*sin(theta)*delta_t + y;//y
+		x_[2] = v;								   //相对速度
+		x_[3] = tmpTheta;                          //偏航角
+		x_[4] = omiga;							   //偏航角速度
 	}
+	x_[3] = control_psi(x_[3]);
 //	std::cout <<"x_: "<< x_ << std::endl;
 }
 
@@ -85,6 +87,7 @@ void EKF_CTRV::ProcessQMatrix(double delta_t)
 	float delta_t4 = delta_t3*delta_t;
 	float std_a_2 = std_a_*std_a_;
 	float std_yawdd_2 = std_yawdd_*std_yawdd_;
+	x_[3] = control_psi(x_[3]);
 	float theta = x_[3];
 	//更新Q_矩阵
 	Q_ = Eigen::MatrixXd(5, 5);
@@ -129,7 +132,7 @@ void EKF_CTRV::ProcessQMatrix(double delta_t)
 void EKF_CTRV::ProcessJAMatrix(double delta_t)
 {
 	float v = x_[2];
-	float theta = x_[3];
+	float theta = control_psi(x_[3]);
 	float omiga = x_[4];
 	float tmpTheta = omiga*delta_t + theta;
 	float v_omiga = v / omiga;
@@ -140,7 +143,7 @@ void EKF_CTRV::ProcessJAMatrix(double delta_t)
 
 	float q11, q12, q13, q14, q15, 
 		  q21, q22, q23, q24, q25;
-	if (omiga > 0.00001)
+	if (abs(omiga) > 0.0001)
 	{
 		q11 = 1;
 		q12 = 0;
@@ -201,6 +204,7 @@ Eigen::VectorXd EKF_CTRV::ProcessHJMatrix()
 	float x = x_[0];
 	float y = x_[1];
 	float v = x_[2];
+	float theta = control_psi(x_[3]);
 	float x2y2 = (x*x + y*y);
 	float sqrt_x2y2 = (sqrt(x2y2));
 	float sqrt23_x2y2 = pow(x2y2, 2.0 / 3.0);
@@ -226,7 +230,7 @@ Eigen::VectorXd EKF_CTRV::ProcessHJMatrix()
 	HJ_ << q11, q12, q13, q14, q15,
 		q21, q22, q23, q24, q25,
 		q31, q32, q33, q34, q35;
-	hx << sqrt_x2y2, atan2(y, x), vxvy / sqrt_x2y2;
+	hx << sqrt_x2y2, atan2(y, x), (v*x*cos(theta) + v*y*sin(theta)) / sqrt_x2y2;
 	return hx;
 }
 
@@ -254,8 +258,22 @@ void EKF_CTRV::getState(Eigen::VectorXd& x)
 {
 	x[0] = x_[0];
 	x[1] = x_[1];
-	x[2] = x_[2];
-	x[3] = x_[3];
+	float v = x_[2];
+	float theta = x_[3];
+	x[2] = v*cos(theta);
+	x[3] = v*sin(theta);
+}
+
+float EKF_CTRV::control_psi(float phi)
+{
+	while ((phi > M_PI) || (phi < -M_PI))
+	{
+		if (phi > M_PI)
+			phi -= DoublePI;
+		if (phi < -M_PI)
+			phi += DoublePI;
+	}
+	return phi;
 }
 
 void EKF_CTRV::Update(const Eigen::VectorXd &z)
@@ -263,7 +281,7 @@ void EKF_CTRV::Update(const Eigen::VectorXd &z)
 	//基于卡尔曼对状态进行更新
 	Eigen::VectorXd z_pred = H_*x_;//状态空间到测量空间的转换
 	Eigen::VectorXd y = z - z_pred;//获取测量值与状态值之间的差
-
+	//y[1] = control_psi(y[1]);
 	Eigen::MatrixXd HT = H_.transpose();
 	Eigen::MatrixXd S = H_*P_*HT + R_;
 	Eigen::MatrixXd Si = S.inverse();
@@ -272,6 +290,7 @@ void EKF_CTRV::Update(const Eigen::VectorXd &z)
 
 	//状态更新
 	x_ = x_ + K*y;
+	x_[3] = control_psi(x_[3]);
 	long x_size = x_.size();
 	Eigen::MatrixXd I = Eigen::MatrixXd::Identity(x_size, x_size);
 	P_ = (I - K*H_)*P_;
@@ -281,8 +300,10 @@ void EKF_CTRV::UpdateEKF(const Eigen::VectorXd &z)
 {
 	//基于卡尔曼对状态进行更新
 	Eigen::VectorXd z_pred = ProcessHJMatrix();//状态空间到测量空间的转换
+	if (z_pred[0] < 0.0001)//# if rho is 0
+		z_pred[2] = 0;
 	Eigen::VectorXd y = z - z_pred;//获取测量值与状态值之间的差
-
+	y[1] = control_psi(y[1]);
 
 	Eigen::MatrixXd HJ_T = HJ_.transpose();
 	Eigen::MatrixXd S = HJ_*P_*HJ_T + R_;
@@ -292,6 +313,7 @@ void EKF_CTRV::UpdateEKF(const Eigen::VectorXd &z)
 
 	//状态更新
 	x_ = x_ + K*y;
+	x_[3] = control_psi(x_[3]);
 	long x_size = x_.size();
 	Eigen::MatrixXd I = Eigen::MatrixXd::Identity(x_size, x_size);
 	P_ = (I - K*HJ_)*P_;
@@ -319,20 +341,22 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 			//std::cout << "laser data: " << std::endl;
 			x_[0] = meas_package.raw_measurements_[0];//x
 			x_[1] = meas_package.raw_measurements_[1];//y
-			x_[2] = 0;								   //相对速度
-			x_[3] = 0;								   //偏航角
-			x_[4] = 0;								   //偏航角速度
+			x_[2] = 0.0;								   //相对速度
+			x_[3] = 0.0;								   //偏航角
+			x_[4] = 0.0;     						   //偏航角速度
 		}
 		else if (meas_package.sensor_type_ == MeasurementPackage::RADAR){
 			//std::cout << "radar data: " << std::endl;
 			float rho = meas_package.raw_measurements_[0];
 			float phi = meas_package.raw_measurements_[1];
+			//将角度归一化到【-π，π】
+			phi = control_psi(phi);
 			float rho_dot = meas_package.raw_measurements_[2];
 			x_[0] = rho * cos(phi);
 			x_[1] = rho * sin(phi);
-			x_[2] = rho_dot;
-			x_[3] = 0;
-			x_[4] = 0;
+			x_[2] = 0.0;
+			x_[3] = 0.0;
+			x_[4] = 0.0;
 		}
 		previous_timestamp_ = meas_package.timestamp_;
 		is_initialized_ = true;

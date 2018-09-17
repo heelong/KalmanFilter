@@ -56,34 +56,25 @@ public:
 
   Eigen::VectorXd raw_measurements_;
   MeasurementPackage(){};
-  MeasurementPackage(Obj &Obstacles)
-  {
-	  if (Obstacles.ObstacleAttriSrc == SA_Lidar) {
-		  // LASER MEASUREMENT
+  //MeasurementPackage(Obj &Obstacles)
+  //{
+	 // if (Obstacles.ObstacleAttriSrc == SA_Lidar) {
+		//  // LASER MEASUREMENT
 
-		  // read measurements at this timestamp
-		  sensor_type_ = MeasurementPackage::LASER;
-		  raw_measurements_ = Eigen::VectorXd(2);
-		  raw_measurements_ << Obstacles.CenterPoint_Local_x, Obstacles.CenterPoint_Local_y;
-		  timestamp_ = Obstacles.CurrentTime/**100000*/;
-	  }
-	  else if (Obstacles.ObstacleAttriSrc == SA_Lidar_Radar)
-	  {
-		  // RADAR and LiDAR MEASUREMENT
-		  sensor_type_ = MeasurementPackage::LASER_RADAR;
-		  raw_measurements_ = Eigen::VectorXd(5);
-		  raw_measurements_ << Obstacles.CenterPoint_Local_x, Obstacles.CenterPoint_Local_y,//LiDAR
-			  Obstacles.Range, Obstacles.RelativeAngle, Obstacles.RelativeVelocity;//Radar
-		  timestamp_ = Obstacles.CurrentTime /** 100000*/;
-	  }
-	  else if (Obstacles.ObstacleAttriSrc == SA_Radar) {
-		  // RADAR MEASUREMENT
-		  sensor_type_ = MeasurementPackage::RADAR;
-		  raw_measurements_ = Eigen::VectorXd(3);
-		  raw_measurements_ << Obstacles.Range, Obstacles.RelativeAngle, Obstacles.RelativeVelocity;
-		  timestamp_ = Obstacles.CurrentTime /** 100000*/;
-	  }
-  }
+		//  // read measurements at this timestamp
+		//  sensor_type_ = MeasurementPackage::LASER;
+		//  raw_measurements_ = Eigen::VectorXd(2);
+		//  raw_measurements_ << Obstacles.CenterPoint_Local_x, Obstacles.CenterPoint_Local_y;
+		//  timestamp_ = Obstacles.CurrentTime/**100000*/;
+	 // }
+	 // else if (Obstacles.ObstacleAttriSrc == SA_Radar) {
+		//  // RADAR MEASUREMENT
+		//  sensor_type_ = MeasurementPackage::RADAR;
+		//  raw_measurements_ = Eigen::VectorXd(3);
+		//  raw_measurements_ << Obstacles.Range, Obstacles.RelativeAngle, Obstacles.RelativeVelocity;
+		//  timestamp_ = Obstacles.CurrentTime /** 100000*/;
+	 // }
+  //}
 };
 
 #endif /* MEASUREMENT_PACKAGE_H_ */
