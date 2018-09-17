@@ -12,7 +12,6 @@ with open('output.txt') as f:
     # table_ekf_output
 
 import plotly.offline as py
-import matplotlib.pyplot as plt  
 from plotly.graph_objs import *
 
 
@@ -64,5 +63,4 @@ layout = Layout(
 )
 
 fig = Figure(data=data, layout=layout)
-#py.plot(table_ekf_output['px_est'],table_ekf_output['py_est'],marker="+")
 py.plot(fig, filename='EKF')

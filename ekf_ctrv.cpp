@@ -119,8 +119,8 @@ void EKF_CTRV::ProcessQMatrix(double delta_t)
 	float q51 = 0;
 	float q52 = 0;
 	float q53 = 0;
-	float q54 = 0.5*delta_t3*std_yawdd_;
-	float q55 = delta_t2*std_yawdd_;
+	float q54 = 0.5*delta_t3*std_yawdd_2;
+	float q55 = delta_t2*std_yawdd_2;
 	Q_ << q11, q12, q13, q14, q15,
 		q21, q22, q23, q24, q25,
 		q31, q32, q33, q34, q35,
