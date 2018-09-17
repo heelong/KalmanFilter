@@ -138,7 +138,8 @@ void EKF_CTRV::ProcessJAMatrix(double delta_t)
 	float v_omiga2 = v / omiga / omiga;
 	JA_ = Eigen::MatrixXd(5, 5);//状态转移矩阵的雅克比矩阵
 
-	float q11, q12, q13, q14, q15, q21, q22, q23, q24, q25;
+	float q11, q12, q13, q14, q15, 
+		  q21, q22, q23, q24, q25;
 	if (omiga > 0.00001)
 	{
 		q11 = 1;
@@ -333,14 +334,6 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 			x_[3] = 0;
 			x_[4] = 0;
 		}
-		else
-		{
-			x_[0] = meas_package.raw_measurements_[0];
-			x_[1] = meas_package.raw_measurements_[1];
-			x_[2] = meas_package.raw_measurements_[4];
-			x_[3] = 0;
-			x_[4] = 0;
-		}
 		previous_timestamp_ = meas_package.timestamp_;
 		is_initialized_ = true;
 		return;
@@ -364,23 +357,6 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 		//radar的更新
 		R_ = R_radar_;//传入测量误差
 		UpdateEKF(meas_package.raw_measurements_);//对于radar数据采用扩展卡尔曼滤波更新
-	}
-	else if (meas_package.sensor_type_ == MeasurementPackage::LASER_RADAR)
-	{
-		//lidar的更新
-		H_ = Eigen::MatrixXd(2, 5);//状态空间到测量空间的映射矩阵
-		H_ << 1, 0, 0, 0, 0,
-			0, 1, 0, 0, 0;
-		R_ = R_laser_;//传入测量误差
-		Eigen::VectorXd raw_measurements_lidar = Eigen::VectorXd(2);
-		raw_measurements_lidar << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1];
-		Update(raw_measurements_lidar);//对于lidar数据采用线性卡尔曼滤波更新
-
-		//radar的更新
-		R_ = R_radar_;//传入测量误差
-		Eigen::VectorXd raw_measurements_radar = Eigen::VectorXd(3);
-		raw_measurements_radar << meas_package.raw_measurements_[2], meas_package.raw_measurements_[3], meas_package.raw_measurements_[4];
-		UpdateEKF(raw_measurements_radar);//对于radar数据采用扩展卡尔曼滤波更新
 	}
 	else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
 		//lidar的更新
