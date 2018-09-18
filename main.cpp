@@ -86,13 +86,13 @@ Eigen::VectorXd CalculateRMSE(const std::vector<Eigen::VectorXd> &estimations,
 int EKF() {
 	//check_arguments(argc, argv);
 
-	std::string in_file_name_ = "D:\\GitHub\\KalmanFilter\\data\\data_synthetic.txt";
+	std::string in_file_name_ = "D:\\GIT\\KalmanFilter\\data\\data_synthetic.txt";
 	std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
 
-	std::string out_file_name_ = "D:\\GitHub\\KalmanFilter\\data\\output.txt";
+	std::string out_file_name_ = "D:\\GIT\\KalmanFilter\\data\\output.txt";
 	std::ofstream out_file_(out_file_name_.c_str(), std::ofstream::out);
 
-	std::string out_file_name2_ = "D:\\GitHub\\KalmanFilter\\data\\output2.txt";
+	std::string out_file_name2_ = "D:\\GIT\\KalmanFilter\\data\\output2.txt";
 	std::ofstream out_file2_(out_file_name2_.c_str(), std::ofstream::out);
 
 	check_files(in_file_, in_file_name_, out_file_, out_file_name_);
@@ -145,34 +145,34 @@ int EKF() {
 			gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
 			gt_pack_list.push_back(gt_package);
 		}
-		//else 
-		//if (sensor_type.compare("R") == 0) {
-		//	// RADAR MEASUREMENT
-		//	meas_package.sensor_type_ = MeasurementPackage::RADAR;
-		//	meas_package.raw_measurements_ = Eigen::VectorXd(4);
-		//	iss >> ro;
-		//	iss >> phi;
-		//	iss >> ro_dot;
+		else 
+		if (sensor_type.compare("R") == 0) {
+			// RADAR MEASUREMENT
+			meas_package.sensor_type_ = MeasurementPackage::RADAR;
+			meas_package.raw_measurements_ = Eigen::VectorXd(4);
+			iss >> ro;
+			iss >> phi;
+			iss >> ro_dot;
 
-		//	//将角度归一化到【-π，π】
-		//	while (phi > M_PI)
-		//		phi -= DoublePI;
-		//	while (phi < -M_PI)
-		//		phi += DoublePI;
-		//	meas_package.raw_measurements_ << ro * cos(phi), ro * sin(phi), ro_dot* cos(phi), ro_dot* sin(phi);
-		//	iss >> timestamp;
-		//	meas_package.timestamp_ = timestamp;
-		//	measurement_pack_list.push_back(meas_package);
+			//将角度归一化到【-π，π】
+			while (phi > M_PI)
+				phi -= DoublePI;
+			while (phi < -M_PI)
+				phi += DoublePI;
+			meas_package.raw_measurements_ << ro * cos(phi), ro * sin(phi), ro_dot* cos(phi), ro_dot* sin(phi);
+			iss >> timestamp;
+			meas_package.timestamp_ = timestamp;
+			measurement_pack_list.push_back(meas_package);
 
-		//	// read ground truth data to compare later
-		//	iss >> x_gt;
-		//	iss >> y_gt;
-		//	iss >> vx_gt;
-		//	iss >> vy_gt;
-		//	gt_package.gt_values_ = Eigen::VectorXd(4);
-		//	gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
-		//	gt_pack_list.push_back(gt_package);
-		//}
+			// read ground truth data to compare later
+			iss >> x_gt;
+			iss >> y_gt;
+			iss >> vx_gt;
+			iss >> vy_gt;
+			gt_package.gt_values_ = Eigen::VectorXd(4);
+			gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
+			gt_pack_list.push_back(gt_package);
+		}
 
 	}
 
@@ -215,8 +215,8 @@ int EKF() {
 			out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
 		}
 		else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
-			float ro = measurement_pack_list[k].raw_measurements_(0);
-			float phi = measurement_pack_list[k].raw_measurements_(1);
+			double ro = measurement_pack_list[k].raw_measurements_(0);
+			double phi = measurement_pack_list[k].raw_measurements_(1);
 			out_file_ << measurement_pack_list[k].raw_measurements_(0) << " ";
 			out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
 		}
@@ -324,7 +324,6 @@ int main(int argc, char* argv[]) {
 			//         iss >> ro;
 			//         iss >> phi;
 			//         iss >> ro_dot;
-
 			//meas_package.raw_measurements_ << ro, phi, ro_dot;
    //         iss >> timestamp;
    //         meas_package.timestamp_ = timestamp;
@@ -378,8 +377,8 @@ int main(int argc, char* argv[]) {
             out_file_ << measurement_pack_list[k].raw_measurements_(0) << " ";
             out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
         } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
-            float ro = measurement_pack_list[k].raw_measurements_(0);
-            float phi = measurement_pack_list[k].raw_measurements_(1);
+			double ro = measurement_pack_list[k].raw_measurements_(0);
+			double phi = measurement_pack_list[k].raw_measurements_(1);
 			out_file_ << ro*cos(phi) << " ";
 			out_file_ << ro*sin(phi) << " ";
         }

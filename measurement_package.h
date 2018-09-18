@@ -2,7 +2,7 @@
 #define MEASUREMENT_PACKAGE_H_
 
 #include "Eigen/Dense"
-const float DoublePI = 2 * M_PI;
+const double DoublePI = 2 * M_PI;
 //目标属性来源是多元化的,不同方位、距离、高度下，目标不会被所有传感器探测到,本枚举标明障碍物融合所用到的传感器信息
 enum ScanningAttributes  //属性来源
 {

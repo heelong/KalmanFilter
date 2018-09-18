@@ -302,6 +302,17 @@ void UKF::PredictLaserMeasurement(VectorXd &z_pred, MatrixXd &S, MatrixXd &Zsig,
     S = S + R_laser_;
 }
 
+void UKF::getState(Eigen::VectorXd& x)
+{
+
+	x[0] = x_[0];
+	x[1] = x_[1];
+	double v = x_[2];
+	double theta = x_[3];// control_psi(x_[3]);;
+	x[2] = v*cos(theta);
+	x[3] = v*sin(theta);
+}
+
 
 void UKF::PredictRadarMeasurement(VectorXd &z_pred, MatrixXd &S, MatrixXd &Zsig, long n_z) {
     for(int i=0; i < 2*n_aug_+1; i++){

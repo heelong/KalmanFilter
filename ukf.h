@@ -125,6 +125,7 @@ public:
     void UpdateState(VectorXd &z, VectorXd &z_pred, MatrixXd &S, MatrixXd &Zsig, long n_z);
 
     void PredictLaserMeasurement(VectorXd &z_pred, MatrixXd &S, MatrixXd &Zsig, long n_z);
+	void getState(Eigen::VectorXd& x);
 };
 
 

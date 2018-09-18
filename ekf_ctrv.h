@@ -19,20 +19,12 @@ class EKF_CTRV {
 	*/
 
 public:
-	/**
-	* Constructor
-	*/
+
 	EKF_CTRV();
 
-	/**
-	* Destructor
-	*/
 	virtual ~EKF_CTRV();
 
-	/**
-	* ProcessMeasurement
-	* @param meas_package The latest measurement data of either radar or laser
-	*/
+
 	void ProcessMeasurement(const MeasurementPackage &meas_package);
 
 	/*状态转移函数*/
@@ -44,21 +36,14 @@ public:
 
 	/*计算毫米波雷达映射矩阵对应的雅克比矩阵*/
 	Eigen::VectorXd ProcessHJMatrix();
-	/**
-	* Updates the state by using standard Kalman Filter equations
-	* @param z The measurement at k+1
-	*/
+
 	void Update(const Eigen::VectorXd &z);
 
-	/**
-	* Updates the state by using Extended Kalman Filter equations
-	* @param z The measurement at k+1
-	*/
+
 	void UpdateEKF(const Eigen::VectorXd &z);
 	void Predict(double delta_t);
-	void getState(Obj &Obstacles);
 	void getState(Eigen::VectorXd& x);
-	float control_psi(float psi);
+	double control_psi(double psi);
 private:
 	//判断是否被初始化
 	bool is_initialized_;
@@ -93,10 +78,10 @@ private:
 	Eigen::MatrixXd HJ_LR;//毫米波雷达+激光雷达映射矩阵对应的雅克比矩阵
 
 	// 直线加速度噪声 m/s^2
-	float std_a_;
+	double std_a_;
 
 	// 偏航角加速度噪声 rad/s^2
-	float std_yawdd_;
+	double std_yawdd_;
 };
 
 
