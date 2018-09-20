@@ -8,13 +8,13 @@
 #include <string>
 #include <fstream>
 #include <time.h>
-#include "kf.h"
+
 
 class EKF_CTRV {
 	/*CTRV模型，x、y方向的速度由速度以及方向决定，可以跟踪前车的状态
 	* x,y,
 	* v 追踪车辆相对于自车的速度,
-	* θ 偏航角，是追踪的目标车辆在当前车辆坐标系下与Y轴（即车前方向）的夹角),在车辆坐标系下的方位角
+	* θ 偏航角，是追踪的目标车辆在当前车辆坐标系下与Y轴（即车前方向）的夹角)
 	* ω 偏航角速度
 	*/
 
@@ -23,7 +23,7 @@ public:
 	EKF_CTRV();
 
 	virtual ~EKF_CTRV();
-
+	void initial();
 
 	void ProcessMeasurement(const MeasurementPackage &meas_package);
 
@@ -71,18 +71,11 @@ private:
 
 	Eigen::MatrixXd R_laser_;//激光雷达的误差矩阵
 	Eigen::MatrixXd R_radar_;//毫米波雷达的误差矩阵
-	Eigen::MatrixXd R_laser_radar_;//毫米波雷达的误差矩阵
 	Eigen::MatrixXd H_laser_;//激光雷达映射矩阵
-
 	Eigen::MatrixXd HJ_;//毫米波雷达映射矩阵对应的雅克比矩阵
-	Eigen::MatrixXd HJ_LR;//毫米波雷达+激光雷达映射矩阵对应的雅克比矩阵
-
 	// 直线加速度噪声 m/s^2
 	double std_a_;
-
 	// 偏航角加速度噪声 rad/s^2
 	double std_yawdd_;
 };
-
-
 #endif 

@@ -22,6 +22,7 @@ trace1 = Scatter(
     xaxis='x2',
     yaxis='y2',
     name='KF- Estimate',
+	fillcolor = 'rgb(255,0,0)',
     mode='markers'
 )
 
@@ -32,6 +33,7 @@ trace2 = Scatter(
     xaxis='x2',
     yaxis='y2',
     name='Measurements',
+	fillcolor = 'rgb(255,255,255)',
     mode = 'markers'
 )
 

@@ -34,10 +34,7 @@ KF_FUSION::KF_FUSION() {
 
 KF_FUSION::~KF_FUSION() {}
 
-/**
- * @param {MeasurementPackage} meas_package The latest measurement data of
- * either radar or laser.
- */
+
 void KF_FUSION::ProcessMeasurement(const MeasurementPackage &meas_package) {
 	clock_t start, finish;
 	start = clock();
@@ -47,7 +44,6 @@ void KF_FUSION::ProcessMeasurement(const MeasurementPackage &meas_package) {
 		 * 创建协方差矩阵
 		 * 对于radar的测量需要将其从极坐标转换为笛卡尔坐标系
 		 */
-        // first measurement
 		ekf_.x_ = Eigen::VectorXd(4);
 		ekf_.x_ << 1, 1, 1, 1;
 
@@ -129,7 +125,7 @@ void KF_FUSION::getState(Eigen::VectorXd& x)
 
 void KF_FUSION::initial()
 {
-	std::string in_file_name_ = "D:/GitHub/KalmanFilter/config.txt";
+	std::string in_file_name_ = "../config.txt";
 	std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
 	if (!in_file_.is_open()) {
 		std::cerr << "Cannot open input file: " << in_file_name_ << std::endl;
