@@ -401,8 +401,8 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 		{
 			x_[0] = meas_package.raw_measurements_[0];//x
 			x_[1] = meas_package.raw_measurements_[1];//y
-			x_[2] = 5.0;								   //相对速度
-			x_[3] = 0.02;								   //偏航角
+			x_[2] = 0.0;								   //相对速度
+			x_[3] = -1.7;								   //偏航角
 			x_[4] = 0.00000001;     						   //偏航角速度
 		}
 		else if (meas_package.sensor_type_ == MeasurementPackage::RADAR){
@@ -412,7 +412,7 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 			//phi = control_psi(phi);
 			x_[0] = rho * cos(phi);
 			x_[1] = rho * sin(phi);
-			x_[2] = 5.0;
+			x_[2] = 0.0;
 			x_[3] = 0.02;
 			x_[4] = 0.00000001;
 		}
@@ -425,7 +425,7 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 	* 时间以s为单位
 	* 更新处理噪声的协方差矩阵
 	*/
-	double delta_t = (double(meas_package.timestamp_) - double(previous_timestamp_)) / 1000000.0;
+	double delta_t = (double(meas_package.timestamp_) - double(previous_timestamp_))/* / 1000000.0*/;
 	//std::cout <<"原始值"<< x_[3] / M_PI*180.0 << "   ";
 	//1.进行预测--------------------------------------------------------
 	Predict(delta_t);

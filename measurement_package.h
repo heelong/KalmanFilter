@@ -5,7 +5,7 @@
 const double DoublePI = 2 * M_PI;
 class MeasurementPackage {
 public:
-  long timestamp_;
+  double timestamp_;
 
   enum SensorType{
     LASER,

@@ -5,7 +5,7 @@ import math
 
 #py.offline.init_notebook_mode(connected=True)
 
-my_cols = ['px_est', 'py_est', 'vx_est', 'vy_est', 'theta', 'px_meas', 'py_meas', 'px_gt', 'py_gt', 'vx_gt', 'vy_gt']
+my_cols = ['errorid', 'px_est', 'py_est', 'px_meas', 'py_meas', 'vx_est', 'vy_est', 'theta']
 with open('output.txt') as f:
     table_ekf_output = pd.read_table(f, sep=' ', header=None, names=my_cols, lineterminator='\n')
 
@@ -17,13 +17,13 @@ from plotly.graph_objs import *
 
 # estimations
 trace1 = Scatter(
-    x=table_ekf_output['px_est'],
-    y=table_ekf_output['py_est'],
-    xaxis='x2',
-    yaxis='y2',
-    name='KF- Estimate',
-	fillcolor = 'rgb(255,0,0)',
-    mode='markers'
+   x=table_ekf_output['px_est'],
+   y=table_ekf_output['py_est'],
+   xaxis='x2',
+   yaxis='y2',
+   name='KF- Estimate',
+   fillcolor = 'rgb(255,0,0)',
+   mode='markers'
 )
 
 # Measurements
@@ -38,18 +38,7 @@ trace2 = Scatter(
 )
 
 
-
-# Ground Truth
-trace3 = Scatter(
-    x=table_ekf_output['px_gt'],
-    y=table_ekf_output['py_gt'],
-    xaxis='x2',
-    yaxis='y2',
-    name='Ground Truth',
-    mode='markers'
-)
-
-data = [trace1, trace2, trace3]
+data = [trace1,trace2]
 
 layout = Layout(
     xaxis2=dict(
@@ -66,8 +55,4 @@ layout = Layout(
 
 fig = Figure(data=data, layout=layout)
 py.plot(fig, filename='EKF')
-
-x=table_ekf_output['px_est'],
-y=table_ekf_output['py_est'],
-py.plot(x,y,color='blue',linestyle='solid',marker='o') 
 

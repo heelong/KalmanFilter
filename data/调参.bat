@@ -1,2 +1,2 @@
 start D:/GitHub/KalmanFilter/build/Debug/kf.exe
-start plot1.py
+start plot2.py
