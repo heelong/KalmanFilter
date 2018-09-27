@@ -416,9 +416,9 @@ int EKFSimulation() {
     return 0;
 }
 
-int main() {
+int lidar_kf() {
 
-	std::string in_file_name_ = "../data/Trajectory.txt";
+	std::string in_file_name_ = "../data/Trajectory-lidar-2-1.txt";
 	std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
 
 	std::string out_file_name_ = "../data/output.txt";
@@ -462,14 +462,13 @@ int main() {
 		meas_package.sensor_type_ = MeasurementPackage::LASER;
 		meas_package.raw_measurements_ = Eigen::VectorXd(2);
 
-		//iss >> x;
-		//iss >> x;
-		//iss >> x;
+		iss >> x;
+		iss >> x;
+		iss >> x;
 
 		iss >> x;
 		iss >> y;
 		meas_package.raw_measurements_ << x , y;
-		iss >> timestamp;
 		iss >> timestamp;
 		meas_package.timestamp_ = timestamp;
 		measurement_pack_list.push_back(meas_package);
@@ -582,5 +581,147 @@ int main() {
 		in_file_.close();
 	}
 
+	return 0;
+}
+int radar_EKF() {
+
+	std::string in_file_name_ = "../data/Trajectory-radar-3-1.txt";
+	std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
+
+	std::string out_file_name_ = "../data/output.txt";
+	std::ofstream out_file_(out_file_name_.c_str(), std::ofstream::out);
+
+	std::string out_file_name2_ = "../data/output2.txt";
+	std::ofstream out_file2_(out_file_name2_.c_str(), std::ofstream::out);
+
+	check_files(in_file_, in_file_name_, out_file_, out_file_name_);
+
+	std::vector<MeasurementPackage> measurement_pack_list;//测量值数据包
+	std::vector<GroundTruthPackage> gt_pack_list;//真实值
+
+	std::string line;
+
+	// prep the measurement packages (each line represents a measurement at a
+	// timestamp)
+	float x;
+	float y;
+	float ro;
+	float phi;
+	float ro_dot;
+	float x_gt;
+	float y_gt;
+	float vx_gt;
+	float vy_gt;
+	while (getline(in_file_, line)) {
+
+		std::string sensor_type;
+		MeasurementPackage meas_package;
+		GroundTruthPackage gt_package;
+		std::istringstream iss(line);
+		double timestamp;
+
+		meas_package.sensor_type_ = MeasurementPackage::RADAR;
+		meas_package.raw_measurements_ = Eigen::VectorXd(3);
+
+		iss >> x;
+		iss >> x;
+		iss >> x;
+		iss >> x;
+		iss >> y;
+
+		iss >> ro_dot;
+		iss >> phi;
+		iss >> ro;
+
+		meas_package.raw_measurements_ << ro, phi*M_PI, ro_dot;
+		iss >> timestamp;
+		meas_package.timestamp_ = timestamp;
+		measurement_pack_list.push_back(meas_package);
+	}
+
+	// Create a Fusion EKF instance
+	EKF_CTRV ekf;
+	//EKF ekf;
+	// used to compute the RMSE later
+	std::vector<Eigen::VectorXd> estimations;
+	std::vector<Eigen::VectorXd> ground_truth;
+
+	//Call the EKF-based fusion
+	size_t N = measurement_pack_list.size();
+	for (size_t k = 0; k < N; ++k) {
+		// start filtering from the second frame (the speed is unknown in the first
+		// frame)
+		ekf.ProcessMeasurement(measurement_pack_list[k]);
+		Eigen::VectorXd x_t = Eigen::VectorXd(5);
+		ekf.getState(x_t);
+		double p_x = x_t(0);
+		double p_y = x_t(1);
+		double v_x = x_t(2);
+		double v_y = x_t(3);
+		double theta = x_t(4);
+
+		VectorXd estimate(4);
+
+		estimate(0) = p_x;
+		estimate(1) = p_y;
+		estimate(2) = v_x;
+		estimate(3) = v_y;
+
+		// output the estimation
+		out_file_ << k << " ";
+		out_file_ << p_x << " ";
+		out_file_ << p_y << " ";
+
+
+		// output the measurements
+		if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
+			out_file_ << measurement_pack_list[k].raw_measurements_(0) << " ";
+			out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
+		}
+		else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
+			double ro = measurement_pack_list[k].raw_measurements_(0);
+			double phi = measurement_pack_list[k].raw_measurements_(1);
+			out_file_ << ro*cos(phi) << " ";
+			out_file_ << ro*sin(phi) << " ";
+		}
+		out_file_ << v_x << " ";
+		out_file_ << v_y << " ";
+		out_file_ << theta << "\n";
+		// output the ground truth packages
+		//out_file_ << gt_pack_list[k].gt_values_(0) << " ";
+		//out_file_ << gt_pack_list[k].gt_values_(1) << " ";
+		//out_file_ << gt_pack_list[k].gt_values_(2) << " ";
+		//out_file_ << gt_pack_list[k].gt_values_(3) << "\n";
+		//out_file2_ << k << " ";
+		//out_file2_ << p_x - gt_pack_list[k].gt_values_(0) << " ";
+		//out_file2_ << p_y - gt_pack_list[k].gt_values_(1) << " ";
+		//out_file2_ << v_x - gt_pack_list[k].gt_values_(2) << " ";
+		//out_file2_ << v_y - gt_pack_list[k].gt_values_(3) << " ";
+		//out_file2_ << theta << "\n";
+		//estimations.push_back(estimate);
+		//ground_truth.push_back(gt_pack_list[k].gt_values_);
+	}
+
+	// compute the accuracy (RMSE)
+	//std::cout << "Accuracy - RMSE:" << std::endl << CalculateRMSE(estimations, ground_truth) << std::endl;
+
+	// close files
+	if (out_file_.is_open()) {
+		out_file_.close();
+	}
+	if (out_file2_.is_open()) {
+		out_file2_.close();
+	}
+	if (in_file_.is_open()) {
+		in_file_.close();
+	}
+
+	return 0;
+}
+
+int main()
+{
+	//radar_EKF();
+	EKFSimulation();
 	return 0;
 }

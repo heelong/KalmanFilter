@@ -1,2 +1,2 @@
 start D:/GitHub/KalmanFilter/build/Debug/kf.exe
-start plot2.py
+start plot_radar_est.py
