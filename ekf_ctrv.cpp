@@ -325,6 +325,7 @@ void EKF_CTRV::Update(const Eigen::VectorXd &z)
 	Eigen::MatrixXd I = Eigen::MatrixXd::Identity(x_size, x_size);
 	P_ = (I - K*H_)*P_;
 }
+
 Eigen::VectorXd EKF_CTRV::ProcessHJMatrix()
 {
 	Eigen::VectorXd hx = Eigen::VectorXd(3);
@@ -338,14 +339,14 @@ Eigen::VectorXd EKF_CTRV::ProcessHJMatrix()
 	double sqrt23_x2y2 = pow(x2y2, 3.0/2.0);
 	double vxvy = v*x*cos(theta) + v*y*sin(theta);
 	//------------------------------------------
-	double q11 = x / sqrt_x2y2;
-	double q12 = y / sqrt_x2y2;
+	double q11 = 1.0;
+	double q12 = 0.0;
 	double q13 = 0.0;
 	double q14 = 0.0;
 	double q15 = 0.0;
 	//------------------------------------------
-	double q21 = -y / x2y2;
-	double q22 = x / x2y2;
+	double q21 = 0.0;
+	double q22 = 1.0;
 	double q23 = 0.0;
 	double q24 = 0.0;
 	double q25 = 0.0;
@@ -359,17 +360,18 @@ Eigen::VectorXd EKF_CTRV::ProcessHJMatrix()
 	HJ_ << q11, q12, q13, q14, q15,
 		q21, q22, q23, q24, q25,
 		q31, q32, q33, q34, q35;
-	hx << sqrt_x2y2, atan2(y,x), (v*x*cos(theta) + v*y*sin(theta)) / sqrt_x2y2;
+	//hx << sqrt_x2y2, atan2(y,x), (v*x*cos(theta) + v*y*sin(theta)) / sqrt_x2y2;
+	hx << x, y, (v*x*cos(theta) + v*y*sin(theta)) / sqrt_x2y2;
 	return hx;
 }
 void EKF_CTRV::UpdateEKF(const Eigen::VectorXd &z)
 {
 	Eigen::VectorXd z_pred = ProcessHJMatrix();//状态空间到测量空间的转换
-	if (z_pred[0] < 0.0001)//# if rho is 0
-		z_pred[2] = 0.0;
-	z_pred[1] = control_psi(z_pred[1]);
+	//if (z_pred[0] < 0.0001)//# if rho is 0
+	//	z_pred[2] = 0.0;
+	//z_pred[1] = control_psi(z_pred[1]);
 	Eigen::VectorXd y = z - z_pred;//获取测量值与状态值之间的差
-	y[1] = control_psi(y[1]);
+	//y[1] = control_psi(y[1]);
 	//基于卡尔曼对状态进行更新
 	Eigen::MatrixXd HJ_T = HJ_.transpose();
 	Eigen::MatrixXd S = HJ_*P_*HJ_T + R_;
@@ -410,8 +412,8 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 			double phi = meas_package.raw_measurements_[1];
 			//将角度归一化到【-π，π】
 			//phi = control_psi(phi);
-			x_[0] = rho * cos(phi);
-			x_[1] = rho * sin(phi);
+			x_[0] = meas_package.raw_measurements_[0];
+			x_[1] = meas_package.raw_measurements_[1];
 			x_[2] = 5;
 			x_[3] = 0.02;
 			x_[4] = 0.00000001;

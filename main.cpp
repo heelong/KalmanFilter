@@ -319,10 +319,10 @@ int EKFSimulation() {
             // RADAR MEASUREMENT
 			meas_package.sensor_type_ = MeasurementPackage::RADAR;
 			meas_package.raw_measurements_ = Eigen::VectorXd(3);
-			         iss >> ro;
-			         iss >> phi;
-			         iss >> ro_dot;
-			meas_package.raw_measurements_ << ro, phi, ro_dot;
+			iss >> ro;
+			iss >> phi;
+			iss >> ro_dot;
+			meas_package.raw_measurements_ << ro*cos(phi), ro*sin(phi), ro_dot;
             iss >> timestamp;
             meas_package.timestamp_ = timestamp;
             measurement_pack_list.push_back(meas_package);
@@ -376,10 +376,12 @@ int EKFSimulation() {
             out_file_ << measurement_pack_list[k].raw_measurements_(0) << " ";
             out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
         } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
-			double ro = measurement_pack_list[k].raw_measurements_(0);
-			double phi = measurement_pack_list[k].raw_measurements_(1);
-			out_file_ << ro*cos(phi) << " ";
-			out_file_ << ro*sin(phi) << " ";
+			//double ro = measurement_pack_list[k].raw_measurements_(0);
+			//double phi = measurement_pack_list[k].raw_measurements_(1);
+			//out_file_ << ro*cos(phi) << " ";
+			//out_file_ << ro*sin(phi) << " ";
+			out_file_ << measurement_pack_list[k].raw_measurements_(0) << " ";
+			out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
         }
 
         // output the ground truth packages
