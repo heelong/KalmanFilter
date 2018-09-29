@@ -49,7 +49,7 @@ private:
 	bool is_initialized_;
 
 	// 上一数据时间戳
-	long long  previous_timestamp_;
+	double  previous_timestamp_;
 	///* 状态向量
 	Eigen::VectorXd x_;
 
