@@ -1,8 +1,8 @@
-#include "ekf_ctrv.h"
+#include "ekf_ctrv_geo.h"
 #include <iostream>
 
 
-EKF_CTRV::EKF_CTRV() {
+EKF_GEO::EKF_GEO() {
 	is_initialized_ = false;
 	previous_timestamp_ = 0;
 
@@ -47,9 +47,9 @@ EKF_CTRV::EKF_CTRV() {
 	std_yawdd_ = 0.3;
 }
 
-EKF_CTRV::~EKF_CTRV() {}
+EKF_GEO::~EKF_GEO() {}
 
-void EKF_CTRV::initial()
+void EKF_GEO::initial()
 {
 	std::string in_file_name_ = "../config.txt";
 	std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
@@ -136,7 +136,7 @@ void EKF_CTRV::initial()
 		0.0, 0.0, 0.0, ptheta, 0.0,
 		0.0, 0.0, 0.0, 0.0, pomiga;
 }
-void EKF_CTRV::StateTransition(double delta_t)
+void EKF_GEO::StateTransition(double delta_t)
 {
 	float x = x_[0];
 	float y = x_[1];
@@ -165,7 +165,7 @@ void EKF_CTRV::StateTransition(double delta_t)
 
 }
 
-void EKF_CTRV::ProcessQMatrix(double delta_t)
+void EKF_GEO::ProcessQMatrix(double delta_t)
 {
 	float delta_t2 = delta_t*delta_t;
 	float delta_t3 = delta_t2*delta_t;
@@ -212,7 +212,7 @@ void EKF_CTRV::ProcessQMatrix(double delta_t)
 		q51, q52, q53, q54, q55;
 }
 
-void EKF_CTRV::ProcessJAMatrix(double delta_t)
+void EKF_GEO::ProcessJAMatrix(double delta_t)
 {
 	float v = x_[2];
 	float theta = x_[3];
@@ -279,7 +279,7 @@ void EKF_CTRV::ProcessJAMatrix(double delta_t)
 		q51, q52, q53, q54, q55;
 }
 
-void EKF_CTRV::Predict(double delta_t)
+void EKF_GEO::Predict(double delta_t)
 {
 	/*状态转移*/
 	StateTransition(delta_t);
@@ -291,7 +291,7 @@ void EKF_CTRV::Predict(double delta_t)
 	P_ = JA_*P_*JA_.transpose() + Q_;
 }
 
-void EKF_CTRV::getState(Eigen::VectorXd& x)
+void EKF_GEO::getState(Eigen::VectorXd& x)
 {
 	x[0] = x_[0];
 	x[1] = x_[1];
@@ -303,7 +303,7 @@ void EKF_CTRV::getState(Eigen::VectorXd& x)
 	x[5] = theta;
 }
 
-double EKF_CTRV::control_psi(double phi)
+double EKF_GEO::control_psi(double phi)
 {
 	while ((phi > M_PI) || (phi < -M_PI))
 	{
@@ -315,7 +315,7 @@ double EKF_CTRV::control_psi(double phi)
 	return phi;
 }
 
-void EKF_CTRV::Update(const Eigen::VectorXd &z)
+void EKF_GEO::Update(const Eigen::VectorXd &z)
 {
 	//基于卡尔曼对状态进行更新
 	Eigen::MatrixXd HT = H_.transpose();
@@ -333,7 +333,7 @@ void EKF_CTRV::Update(const Eigen::VectorXd &z)
 	Eigen::MatrixXd I = Eigen::MatrixXd::Identity(x_size, x_size);
 	P_ = (I - K*H_)*P_;
 }
-Eigen::VectorXd EKF_CTRV::ProcessHJMatrix()
+Eigen::VectorXd EKF_GEO::ProcessHJMatrix()
 {
 	Eigen::VectorXd hx = Eigen::VectorXd(3);
 	HJ_ = Eigen::MatrixXd(3, 5);//预测空间到测量空间的雅克比矩阵
@@ -371,7 +371,7 @@ Eigen::VectorXd EKF_CTRV::ProcessHJMatrix()
 	hx << x, y, (v*x*cos(theta) + v*y*sin(theta)) / sqrt_x2y2;
 	return hx;
 }
-void EKF_CTRV::UpdateEKF(const Eigen::VectorXd &z)
+void EKF_GEO::UpdateEKF(const Eigen::VectorXd &z)
 {
 	Eigen::VectorXd z_pred = ProcessHJMatrix();//状态空间到测量空间的转换
 	//if (z_pred[0] < 0.0001)//# if rho is 0
@@ -393,7 +393,7 @@ void EKF_CTRV::UpdateEKF(const Eigen::VectorXd &z)
 	P_ = (I - K*HJ_)*P_;
 }
 
-void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
+void EKF_GEO::ProcessMeasurement(const MeasurementPackage &meas_package) {
 	clock_t start, finish;
 	start = clock();
 	if (!is_initialized_)
@@ -434,7 +434,7 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 	* 时间以s为单位
 	* 更新处理噪声的协方差矩阵
 	*/
-	double delta_t = (double(meas_package.timestamp_) - double(previous_timestamp_)) /*/ 1000000.0*/;
+	double delta_t = (double(meas_package.timestamp_) - double(previous_timestamp_)) / 1000000.0;
 	//std::cout <<"原始值"<< x_[3] / M_PI*180.0 << "   ";
 	//1.进行预测--------------------------------------------------------
 	Predict(delta_t);

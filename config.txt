@@ -1,13 +1,13 @@
-std_laspx_  0.15
-std_laspy_  0.15
+std_laspx_  2
+std_laspy_  2
 
-std_radrho_  0.3;
-std_radphi_  0.03;
-std_radrhodot_  0.3;
+std_radx_  4;
+std_rady_  4;
+std_radrhodot_  2;
 
 
 px  1
-py  5
-pv  2
-ptheta  1
-pomiga  1
+py  1
+pv  1
+ptheta  0.5
+pomiga  0.5

@@ -1,5 +1,5 @@
-#ifndef EKFCTRV_EKF_H
-#define EKFCTRV_EKF_H
+#ifndef EKFGEO_EKF_H
+#define EKFGEO_EKF_H
 
 
 #include "measurement_package.h"
@@ -10,7 +10,7 @@
 #include <time.h>
 
 
-class EKF_CTRV {
+class EKF_GEO {
 	/*CTRV模型，x、y方向的速度由速度以及方向决定，可以跟踪前车的状态
 	* x,y,
 	* v 追踪车辆相对于自车的速度,
@@ -20,9 +20,9 @@ class EKF_CTRV {
 
 public:
 
-	EKF_CTRV();
+	EKF_GEO();
 
-	virtual ~EKF_CTRV();
+	virtual ~EKF_GEO();
 	void initial();
 
 	void ProcessMeasurement(const MeasurementPackage &meas_package);

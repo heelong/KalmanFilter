@@ -5,7 +5,7 @@ import math
 
 #py.offline.init_notebook_mode(connected=True)
 
-my_cols = ['errorid', 'px_est', 'py_est', 'px_meas', 'py_meas', 'vx_est', 'vy_est', 'theta']
+my_cols = ['errorid', 'px_est', 'py_est', 'px_meas', 'py_meas', 'vx_est', 'vy_est','v', 'theta']
 with open('output.txt') as f:
     table_ekf_output = pd.read_table(f, sep=' ', header=None, names=my_cols, lineterminator='\n')
 

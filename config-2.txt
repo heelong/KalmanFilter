@@ -1,0 +1,13 @@
+std_laspx_  2.0         //完成实测数据验证
+std_laspy_  2.0         //完成实测数据验证
+
+std_radrho_  2.5;       //4.7
+std_radphi_  0.01;
+std_radrhodot_  0.9;
+
+
+px  2
+py  2                   //完成实测数据验证
+pv  2                   //完成实测数据验证
+ptheta  3
+pomiga  1
