@@ -46,6 +46,7 @@ trace3 = Scatter(
     xaxis='x2',
     yaxis='y2',
     name='Ground Truth',
+	fillcolor = 'rgb(0,0,0)',
     mode='markers'
 )
 

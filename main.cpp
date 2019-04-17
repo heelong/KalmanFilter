@@ -105,15 +105,15 @@ int KFSimulation() {
 
 	// prep the measurement packages (each line represents a measurement at a
 	// timestamp)
-	float x;
-	float y;
-	float ro;
-	float phi;
-	float ro_dot;
-	float x_gt;
-	float y_gt;
-	float vx_gt;
-	float vy_gt;
+	double x;
+	double y;
+	double ro;
+	double phi;
+	double ro_dot;
+	double x_gt;
+	double y_gt;
+	double vx_gt;
+	double vy_gt;
 	while (getline(in_file_, line)) {
 
 		std::string sensor_type;
@@ -124,29 +124,29 @@ int KFSimulation() {
 
 		// reads first element from the current line
 		iss >> sensor_type;
-		if (sensor_type.compare("L") == 0) {
-			// LASER MEASUREMENT
+		//if (sensor_type.compare("L") == 0) {
+		//	// LASER MEASUREMENT
 
-			// read measurements at this timestamp
-			meas_package.sensor_type_ = MeasurementPackage::LASER;
-			meas_package.raw_measurements_ = Eigen::VectorXd(2);
-			iss >> x;
-			iss >> y;
-			meas_package.raw_measurements_ << x, y;
-			iss >> timestamp;
-			meas_package.timestamp_ = timestamp;
-			measurement_pack_list.push_back(meas_package);
+		//	// read measurements at this timestamp
+		//	meas_package.sensor_type_ = MeasurementPackage::LASER;
+		//	meas_package.raw_measurements_ = Eigen::VectorXd(2);
+		//	iss >> x;
+		//	iss >> y;
+		//	meas_package.raw_measurements_ << x, y;
+		//	iss >> timestamp;
+		//	meas_package.timestamp_ = static_cast<double>(timestamp)/ 1000000.0;
+		//	measurement_pack_list.push_back(meas_package);
 
-			// read ground truth data to compare later
-			iss >> x_gt;
-			iss >> y_gt;
-			iss >> vx_gt;
-			iss >> vy_gt;
-			gt_package.gt_values_ = Eigen::VectorXd(4);
-			gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
-			gt_pack_list.push_back(gt_package);
-		}
-		else 
+		//	// read ground truth data to compare later
+		//	iss >> x_gt;
+		//	iss >> y_gt;
+		//	iss >> vx_gt;
+		//	iss >> vy_gt;
+		//	gt_package.gt_values_ = Eigen::VectorXd(4);
+		//	gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
+		//	gt_pack_list.push_back(gt_package);
+		//}
+		//else 
 		if (sensor_type.compare("R") == 0) {
 			// RADAR MEASUREMENT
 			meas_package.sensor_type_ = MeasurementPackage::RADAR;
@@ -162,7 +162,7 @@ int KFSimulation() {
 				phi += DoublePI;
 			meas_package.raw_measurements_ << ro * cos(phi), ro * sin(phi), ro_dot* cos(phi), ro_dot* sin(phi);
 			iss >> timestamp;
-			meas_package.timestamp_ = timestamp;
+			meas_package.timestamp_ = static_cast<double>(timestamp) / 1000000.0;
 			measurement_pack_list.push_back(meas_package);
 
 			// read ground truth data to compare later
@@ -275,15 +275,15 @@ int EKFSimulation() {
 
 	// prep the measurement packages (each line represents a measurement at a
 	// timestamp)
-	float x;
-	float y;
-	float ro;
-	float phi;
-	float ro_dot;
-	float x_gt;
-	float y_gt;
-	float vx_gt;
-	float vy_gt;
+	double x;
+	double y;
+	double ro;
+	double phi;
+	double ro_dot;
+	double x_gt;
+	double y_gt;
+	double vx_gt;
+	double vy_gt;
 	while (getline(in_file_, line)) {
 
 		std::string sensor_type;
@@ -296,7 +296,6 @@ int EKFSimulation() {
 		iss >> sensor_type;
 		if (sensor_type.compare("L") == 0) {
 			// LASER MEASUREMENT
-
 			// read measurements at this timestamp
 			meas_package.sensor_type_ = MeasurementPackage::LASER;
 			meas_package.raw_measurements_ = Eigen::VectorXd(2);
@@ -304,7 +303,7 @@ int EKFSimulation() {
 			iss >> y;
 			meas_package.raw_measurements_ << x, y;
 			iss >> timestamp;
-			meas_package.timestamp_ = timestamp;
+			meas_package.timestamp_ = static_cast<double>(timestamp) / 1000000.0;
 			measurement_pack_list.push_back(meas_package);
 			// read ground truth data to compare later
 			iss >> x_gt;
@@ -315,17 +314,16 @@ int EKFSimulation() {
 			gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
 			gt_pack_list.push_back(gt_package);
 		}
-		else
-			if (sensor_type.compare("R") == 0) {
+		else if (sensor_type.compare("R") == 0) {
 				// RADAR MEASUREMENT
 				meas_package.sensor_type_ = MeasurementPackage::RADAR;
 				meas_package.raw_measurements_ = Eigen::VectorXd(3);
 				iss >> ro;
 				iss >> phi;
 				iss >> ro_dot;
-				meas_package.raw_measurements_ << ro*cos(phi), ro*sin(phi), ro_dot;
+				meas_package.raw_measurements_ << ro, phi, ro_dot;
 				iss >> timestamp;
-				meas_package.timestamp_ = timestamp;
+				meas_package.timestamp_ = static_cast<double>(timestamp) / 1000000.0;
 				measurement_pack_list.push_back(meas_package);
 				// read ground truth data to compare later
 				iss >> x_gt;
@@ -378,12 +376,12 @@ int EKFSimulation() {
 			out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
 		}
 		else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
-			//double ro = measurement_pack_list[k].raw_measurements_(0);
-			//double phi = measurement_pack_list[k].raw_measurements_(1);
-			//out_file_ << ro*cos(phi) << " ";
-			//out_file_ << ro*sin(phi) << " ";
-			out_file_ << measurement_pack_list[k].raw_measurements_(0) << " ";
-			out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
+			double ro = measurement_pack_list[k].raw_measurements_(0);
+			double phi = measurement_pack_list[k].raw_measurements_(1);
+			out_file_ << ro*cos(phi) << " ";
+			out_file_ << ro*sin(phi) << " ";
+			//out_file_ << measurement_pack_list[k].raw_measurements_(0) << " ";
+			//out_file_ << measurement_pack_list[k].raw_measurements_(1) << " ";
 		}
 
 		// output the ground truth packages
@@ -440,15 +438,15 @@ int lidar_kf() {
 
 	// prep the measurement packages (each line represents a measurement at a
 	// timestamp)
-	float x;
-	float y;
-	float ro;
-	float phi;
-	float ro_dot;
-	float x_gt;
-	float y_gt;
-	float vx_gt;
-	float vy_gt;
+	double x;
+	double y;
+	double ro;
+	double phi;
+	double ro_dot;
+	double x_gt;
+	double y_gt;
+	double vx_gt;
+	double vy_gt;
 	while (getline(in_file_, line)) {
 
 		std::string sensor_type;
@@ -609,15 +607,15 @@ int radar_EKF() {
 
 	// prep the measurement packages (each line represents a measurement at a
 	// timestamp)
-	float x;
-	float y;
-	float ro;
-	float phi;
-	float ro_dot;
-	float x_gt;
-	float y_gt;
-	float vx_gt;
-	float vy_gt;
+	double x;
+	double y;
+	double ro;
+	double phi;
+	double ro_dot;
+	double x_gt;
+	double y_gt;
+	double vx_gt;
+	double vy_gt;
 	while (getline(in_file_, line)) {
 
 		std::string sensor_type;
@@ -729,13 +727,13 @@ int UKFMeasured() {
 
 	// prep the measurement packages (each line represents a measurement at a
 	// timestamp)
-	float x;
-	float y;
-	float ro;
-	float phi;
-	float ro_dot;
-	float timestamp;
-	float tmp;
+	double x;
+	double y;
+	double ro;
+	double phi;
+	double ro_dot;
+	double timestamp;
+	double tmp;
 	int FramNum = 0;
 	int type = 0;
 	while (getline(in_file_, line)) {
@@ -833,7 +831,7 @@ int UKFMeasured() {
 
 int EKFMeasured() {
 
-	std::string in_file_name_ = "../data/local/Trajectory_9.04_car2.txt";
+	std::string in_file_name_ = "../data/1_obstacle_R.txt";
 	std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
 
 	std::string out_file_name_ = "../data/output.txt";
@@ -848,13 +846,13 @@ int EKFMeasured() {
 
 	// prep the measurement packages (each line represents a measurement at a
 	// timestamp)
-	float x;
-	float y;
-	float ro;
-	float phi;
-	float ro_dot;
-	float timestamp;
-	float tmp;
+	double x;
+	double y;
+	double ro;
+	double phi;
+	double ro_dot;
+	double timestamp;
+	double tmp;
 	int FramNum=0;
 	int type=0;
 	while (getline(in_file_, line)) {
@@ -870,12 +868,12 @@ int EKFMeasured() {
 		iss >> tmp; 
 
 		////局部坐标
-		iss >> x; iss >> y;
+		iss >> x; iss >> y; iss >> tmp;
 		//雷达测量值
 		iss >> ro_dot;
 		iss >> phi;
 		iss >> ro;
-		//iss >> ro_dot;
+		iss >> tmp;
 		
 		//时间
 		iss >> timestamp;
@@ -895,6 +893,7 @@ int EKFMeasured() {
 			meas_package.sensor_type_ = MeasurementPackage::RADAR;
 			meas_package.raw_measurements_ = Eigen::VectorXd(3);
 			meas_package.raw_measurements_ << ro, phi, ro_dot;
+			//meas_package.raw_measurements_ << x, y, ro_dot,phi;
 			meas_package.timestamp_ = timestamp;
 			measurement_pack_list.push_back(meas_package);
 			}
@@ -970,14 +969,14 @@ int EKFGEOMeasured() {
 
 	// prep the measurement packages (each line represents a measurement at a
 	// timestamp)
-	float x;
-	float y;
-	float yaw;
-	float ro;
-	float phi;
-	float ro_dot;
-	float timestamp;
-	float tmp;
+	double x;
+	double y;
+	double yaw;
+	double ro;
+	double phi;
+	double ro_dot;
+	double timestamp;
+	double tmp;
 	int FramNum = 0;
 	int type = 0;
 	while (getline(in_file_, line)) {
@@ -1078,9 +1077,9 @@ int EKFGEOMeasured() {
 int main()
 {
 	//radar_EKF();
-	//EKFSimulation();
+	EKFSimulation();
 	//lidar_kf();
-	EKFMeasured();
+	//EKFMeasured();
 	//UKFMeasured();
 	return 0;
 }

@@ -11,22 +11,18 @@ import plotly.offline as py
 import matplotlib.pyplot as plt  
 from plotly.graph_objs import *
 
-plt.subplot(411)  
+plt.subplot(311)  
 plt.xlabel('py_est')
 plt.ylabel('px_est')
 plt.plot(table_error_output['py_est'],table_error_output['px_est'],marker="+")
-
-plt.subplot(412)  
-plt.xlabel('py_meas')
-plt.ylabel('px_meas')
 plt.plot(table_error_output['py_meas'],table_error_output['px_meas'],marker="*")
 
-plt.subplot(413)  
+plt.subplot(312)  
 plt.xlabel('errorid')
 plt.ylabel('v')
 plt.plot(table_error_output['errorid'],table_error_output['v'],marker="+")
 
-plt.subplot(414)  
+plt.subplot(313)  
 plt.xlabel('errorid')
 plt.ylabel('heading')
 plt.plot(table_error_output['errorid'],table_error_output['theta'],marker="*")

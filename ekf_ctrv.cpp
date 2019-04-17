@@ -133,14 +133,14 @@ void EKF_CTRV::StateTransition(double delta_t)
 {
 	float x = x_[0];
 	float y = x_[1];
-	float v = x_[2];
-	float theta = x_[3];
-	float omiga = x_[4];
-	float tmpTheta = omiga*delta_t + theta;
+	double v = x_[2];
+	double theta = x_[3];
+	double omiga = x_[4];
+	double tmpTheta = omiga*delta_t + theta;
 	if (abs(omiga) > 0.0001)
 	{
 
-		float v_omiga = v / omiga;
+		double v_omiga = v / omiga;
 		x_[0] = v_omiga*(sin(tmpTheta) - sin(theta)) + x;//x
 		x_[1] = v_omiga*(-cos(tmpTheta) + cos(theta)) + y;//y
 		x_[2] = v;								   //相对速度
@@ -160,44 +160,44 @@ void EKF_CTRV::StateTransition(double delta_t)
 
 void EKF_CTRV::ProcessQMatrix(double delta_t)
 {
-	float delta_t2 = delta_t*delta_t;
-	float delta_t3 = delta_t2*delta_t;
-	float delta_t4 = delta_t3*delta_t;
-	float std_a_2 = std_a_*std_a_;
-	float std_yawdd_2 = std_yawdd_*std_yawdd_;
-	float theta = x_[3];
+	double delta_t2 = delta_t*delta_t;
+	double delta_t3 = delta_t2*delta_t;
+	double delta_t4 = delta_t3*delta_t;
+	double std_a_2 = std_a_*std_a_;
+	double std_yawdd_2 = std_yawdd_*std_yawdd_;
+	double theta = x_[3];
 	//更新Q_矩阵
 	Q_ = Eigen::MatrixXd(5, 5);
 
-	float q11 = 0.25*delta_t4*std_a_2*cos(theta)*cos(theta);
-	float q12 = 0.25*delta_t4*std_a_2*sin(theta)*cos(theta);
-	float q13 = 0.5*delta_t3*std_a_2*cos(theta);
-	float q14 = 0;
-	float q15 = 0;
+	double q11 = 0.25*delta_t4*std_a_2*cos(theta)*cos(theta);
+	double q12 = 0.25*delta_t4*std_a_2*sin(theta)*cos(theta);
+	double q13 = 0.5*delta_t3*std_a_2*cos(theta);
+	double q14 = 0;
+	double q15 = 0;
 
-	float q21 = 0.25*delta_t4*std_a_2*sin(theta)*cos(theta);
-	float q22 = 0.25*delta_t4*std_a_2*sin(theta)*sin(theta);
-	float q23 = 0.5*delta_t3*std_a_2*sin(theta);
-	float q24 = 0;
-	float q25 = 0;
+	double q21 = 0.25*delta_t4*std_a_2*sin(theta)*cos(theta);
+	double q22 = 0.25*delta_t4*std_a_2*sin(theta)*sin(theta);
+	double q23 = 0.5*delta_t3*std_a_2*sin(theta);
+	double q24 = 0;
+	double q25 = 0;
 
-	float q31 = 0.5*delta_t3*std_a_2*cos(theta);
-	float q32 = 0.5*delta_t3*std_a_2*sin(theta);
-	float q33 = delta_t2*std_a_2;
-	float q34 = 0;
-	float q35 = 0;
+	double q31 = 0.5*delta_t3*std_a_2*cos(theta);
+	double q32 = 0.5*delta_t3*std_a_2*sin(theta);
+	double q33 = delta_t2*std_a_2;
+	double q34 = 0;
+	double q35 = 0;
 
-	float q41 = 0;
-	float q42 = 0;
-	float q43 = 0;
-	float q44 = 0.25*delta_t4*std_yawdd_2;
-	float q45 = 0.5*delta_t3*std_yawdd_2;
+	double q41 = 0;
+	double q42 = 0;
+	double q43 = 0;
+	double q44 = 0.25*delta_t4*std_yawdd_2;
+	double q45 = 0.5*delta_t3*std_yawdd_2;
 
-	float q51 = 0;
-	float q52 = 0;
-	float q53 = 0;
-	float q54 = 0.5*delta_t3*std_yawdd_2;
-	float q55 = delta_t2*std_yawdd_2;
+	double q51 = 0;
+	double q52 = 0;
+	double q53 = 0;
+	double q54 = 0.5*delta_t3*std_yawdd_2;
+	double q55 = delta_t2*std_yawdd_2;
 	Q_ << q11, q12, q13, q14, q15,
 		q21, q22, q23, q24, q25,
 		q31, q32, q33, q34, q35,
@@ -207,21 +207,21 @@ void EKF_CTRV::ProcessQMatrix(double delta_t)
 
 void EKF_CTRV::ProcessJAMatrix(double delta_t)
 {
-	float v = x_[2];
-	float theta = x_[3];
-	float omiga = x_[4];
+	double v = x_[2];
+	double theta = x_[3];
+	double omiga = x_[4];
 	JA_ = Eigen::MatrixXd(5, 5);//状态转移矩阵的雅克比矩阵
 
-	float q11, q12, q13, q14, q15,
+	double q11, q12, q13, q14, q15,
 		q21, q22, q23, q24, q25;
 
 	if (abs(omiga) > 0.0001)
 	{
-		float tmpTheta = omiga*delta_t + theta;
-		float v_omiga = v / omiga;
-		float _1_omiga = 1 / omiga;
-		float delta_t_v_omiga = delta_t*v_omiga;
-		float v_omiga2 = v / omiga / omiga;
+		double tmpTheta = omiga*delta_t + theta;
+		double v_omiga = v / omiga;
+		double _1_omiga = 1.0 / omiga;
+		double delta_t_v_omiga = delta_t*v_omiga;
+		double v_omiga2 = v / omiga / omiga;
 		q11 = 1;
 		q12 = 0;
 		q13 = _1_omiga*(-sin(theta) + sin(tmpTheta));
@@ -361,6 +361,7 @@ Eigen::VectorXd EKF_CTRV::ProcessHJMatrix()
 		q21, q22, q23, q24, q25,
 		q31, q32, q33, q34, q35;
 	hx << sqrt_x2y2, atan2(y,x), (v*x*cos(theta) + v*y*sin(theta)) / sqrt_x2y2;
+	//hx << x, y, v*cos(theta - phi);
 	return hx;
 }
 void EKF_CTRV::UpdateEKF(const Eigen::VectorXd &z)
@@ -402,19 +403,19 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 		{
 			x_[0] = meas_package.raw_measurements_[0];//x
 			x_[1] = meas_package.raw_measurements_[1];//y
-			x_[2] = 0.0;								   //相对速度
-			x_[3] = 0.02;								   //偏航角
+			x_[2] = 5;								   //相对速度
+			x_[3] = 0.0;								   //偏航角
 			x_[4] = 0.00000001;     						   //偏航角速度
 		}
 		else if (meas_package.sensor_type_ == MeasurementPackage::RADAR){
 			double rho = meas_package.raw_measurements_[0];
 			double phi = meas_package.raw_measurements_[1];
 			//将角度归一化到【-π，π】
-			//phi = control_psi(phi);
+			phi = control_psi(phi);
 			x_[0] = rho * cos(phi);
 			x_[1] = rho * sin(phi);
-			x_[2] = 0.0;
-			x_[3] = 0.02;
+			x_[2] = 5;								   //相对速度
+			x_[3] = 0.0;								   //偏航角
 			x_[4] = 0.00000001;
 		}
 		previous_timestamp_ = meas_package.timestamp_;
@@ -426,7 +427,7 @@ void EKF_CTRV::ProcessMeasurement(const MeasurementPackage &meas_package) {
 	* 时间以s为单位
 	* 更新处理噪声的协方差矩阵
 	*/
-	double delta_t = (double(meas_package.timestamp_) - double(previous_timestamp_)) /*/ 1000000.0*/;
+	double delta_t = (double(meas_package.timestamp_) - double(previous_timestamp_)) ;
 	//std::cout <<"原始值"<< x_[3] / M_PI*180.0 << "   ";
 	//1.进行预测--------------------------------------------------------
 	Predict(delta_t);
